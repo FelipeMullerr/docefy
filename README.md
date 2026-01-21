@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# Docefy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Docefy é um sistema web para precificação de doces, confeitaria e receitas, pensado para ajudar confeiteiros(as) e pequenos negócios a calcular custos, margens e preços de venda de forma simples, rápida e profissional.
 
-Currently, two official plugins are available:
+## ✨ Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Cadastro e login de usuários (autenticação via Supabase)
+- Cadastro de ingredientes, embalagens e produtos finais
+- Precificação detalhada de receitas, considerando insumos, mão de obra, custos extras e margem de lucro
+- Visualização de cards de resumo (custo médio, preço sugerido, lucro líquido)
+- Dashboard moderno e responsivo
+- Interface amigável e intuitiva
 
-## React Compiler
+## 🛠️ Tecnologias Utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Vite** — Build tool para projetos modernos em React
+- **React** — Biblioteca para construção de interfaces web
+- **TypeScript** — Tipagem estática para maior segurança e produtividade
+- **Tailwind CSS** — Utilitário CSS para estilização rápida e responsiva
+- **Supabase** — Backend as a Service (banco de dados PostgreSQL, autenticação, API)
 
-## Expanding the ESLint configuration
+## 📦 Estrutura de Pastas
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+  components/    # Componentes reutilizáveis (Navbar, etc)
+  pages/         # Telas principais (Home, Login, Cadastro, Dashboard, etc)
+  lib/           # Configuração do Supabase e utilitários globais
+  styles/        # CSS/Tailwind customizado
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 Como rodar o projeto
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Clone o repositório
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/seu-usuario/docefy.git
+cd docefy/docefy
 ```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+```
+
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis (pegue os valores no painel do Supabase):
+
+```
+VITE_SUPABASE_URL=https://<sua-instancia>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
+
+### 4. Rode o projeto
+
+```bash
+npm run dev
+```
+
+O app estará disponível em [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📝 Observações
+
+- O projeto utiliza autenticação e banco de dados do Supabase. Certifique-se de criar as tabelas conforme o modelo do projeto.
+- As variáveis de ambiente podem ser colocadas em `.env` ou `.env.local` (ambos são ignorados pelo git).
+- Para produção, configure as variáveis de ambiente na plataforma de deploy (Vercel, Netlify, etc).
+
+---
+
+## 📄 Licença
+
+Este projeto é open-source e está sob a licença MIT.

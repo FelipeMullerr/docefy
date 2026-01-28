@@ -37,13 +37,14 @@ export default function Login() {
         .select("*")
         .eq("id", user.id)
         .single();
-
       if (profileError && profileError.code !== "PGRST116") {
         setErro(profileError.message);
         setLoading(false);
         return;
       }
-
+      console.log("User ID:", user.id);
+      console.log("Profile data:", profile);
+      console.log("Profile error:", profileError);
       if (!profile) {
         // Não existe perfil, pede o nome de perfil
         setShowProfileName(true);
@@ -118,7 +119,7 @@ export default function Login() {
               )}
               <button
                 type="submit"
-                className=" text-white py-3 rounded-lg font-bold shadow-md transition-all duration-200"
+                className="bg-[#f7f3ef] hover:bg-[#f7f3ef] text-black py-3 rounded-lg font-bold shadow-md transition-all duration-200"
                 disabled={loading}
               >
                 {loading ? "Entrando..." : "Entrar"}

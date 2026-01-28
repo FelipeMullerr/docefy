@@ -70,7 +70,4 @@ O app estará disponível em [http://localhost:5173](http://localhost:5173)
 - Para produção, configure as variáveis de ambiente na plataforma de deploy (Vercel, Netlify, etc).
 
 ---
-
-## 📄 Licença
-
-Este projeto é open-source e está sob a licença MIT.
+e 

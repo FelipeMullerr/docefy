@@ -8,22 +8,13 @@ type Product = {
   name: string;
   type: string;
   unit: string;
+  product_price?: number;
   created_at?: string;
 };
 
-const TYPE_OPTIONS = [
-  "Ingrediente",
-  "Embalagem",
-];
+const TYPE_OPTIONS = ["Ingrediente", "Embalagem"];
 
-const UNIDADES = [
-  "Kg",
-  "g",
-  "Caixa",
-  "ml",
-  "Litro",
-  "Unidade",
-]
+const UNIDADES = ["Kg", "g", "Caixa", "ml", "Litro", "Unidade"];
 
 function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,6 +28,8 @@ function Products() {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [unit, setUnit] = useState("");
+  const [price, setPrice] = useState<number | "">("");
+  const [priceError, setPriceError] = useState<string>("");
 
   // Pesquisa
   const [search, setSearch] = useState("");
@@ -63,6 +56,8 @@ function Products() {
     setName(product?.name || "");
     setType(product?.type || "");
     setUnit(product?.unit || "");
+    setPrice(product?.product_price ?? "");
+    setPriceError("");
     setFormOpen(true);
   }
 
@@ -71,11 +66,18 @@ function Products() {
     setName("");
     setType("");
     setUnit("");
+    setPrice("");
+    setPriceError("");
     setFormOpen(false);
   }
 
   async function handleSaveProduct(e: React.FormEvent) {
     e.preventDefault();
+    setPriceError("");
+    if (price === "" || isNaN(Number(price)) || Number(price) <= 0) {
+      setPriceError("O preço deve ser maior que zero.");
+      return;
+    }
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
@@ -84,12 +86,14 @@ function Products() {
     if (editProduct) {
       await supabase
         .from("products")
-        .update({ name, type, unit })
+        .update({ name, type, unit, product_price: Number(price) })
         .eq("id", editProduct.id);
     } else {
       await supabase
         .from("products")
-        .insert([{ user_id: userId, name, type, unit }]);
+        .insert([
+          { user_id: userId, name, type, unit, product_price: Number(price) },
+        ]);
     }
     handleCloseForm();
     const { data } = await supabase
@@ -119,7 +123,7 @@ function Products() {
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.type.toLowerCase().includes(search.toLowerCase()) ||
-      p.unit.toLowerCase().includes(search.toLowerCase())
+      p.unit.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -148,90 +152,139 @@ function Products() {
 
           {/* Formulário de cadastro/edição */}
           {formOpen && (
-            <form
-              onSubmit={handleSaveProduct}
-              className="flex flex-col gap-4 mb-8 w-full"
-            >
-              <input
-                type="text"
-                placeholder="Nome do produto"
-                className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full text-black placeholder-black"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <select
-                className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full bg-white text-black"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                required
+            <div className="w-full border border-[#3d2c1e] rounded-lg p-4 space-y-2 bg-[#f7f3ef]/40">
+              <form
+                onSubmit={handleSaveProduct}
+                className="flex flex-col gap-4 mb-8 w-full"
               >
-                <option value="">Selecione o tipo</option>
-                {TYPE_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full bg-white text-black"
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                required
-              >
-                <option value="">Selecione a Unidade</option>
-                {UNIDADES.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                  </option>
-                ))}
-              </select>
-              
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="bg-[#f7f3ef] text-black px-4 py-2 rounded-lg font-semibold"
-                  disabled={loading}
+                <h2 className="text-2xl font-extrabold mb-2 text-[#3d2c1e] tracking-tight">
+                  Cadastrar Produto
+                </h2>
+                <label
+                  className="text-black font-semibold"
                 >
-                  {loading
-                    ? "Salvando..."
-                    : editProduct
-                    ? "Salvar Alterações"
-                    : "Cadastrar"}
-                </button>
-                <button
-                  type="button"
-                  className="bg-black text-white px-4 py-2 rounded-lg font-semibold"
-                  onClick={handleCloseForm}
+                  Nome Produto
+                </label>
+                <input
+                  id="nome-produto"
+                  type="text"
+                  placeholder="Nome do produto"
+                  className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full text-black placeholder-black"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                
+                <label
+                  className="text-black font-semibold"
                 >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+                  Tipo de Produto
+                </label>
+                <select
+                  className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full bg-white text-black"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione o tipo</option>
+                  {TYPE_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                
+                <label
+                  className="text-black font-semibold"
+                >
+                  Unidade
+                </label>
+                <select
+                  className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full bg-white text-black"
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione a Unidade</option>
+                  {UNIDADES.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                
+                <label
+                  className="text-black font-semibold"
+                >
+                  Preço
+                </label>
+                <input
+                  type="number"
+                  placeholder="Preço do produto"
+                  className="border border-[#3d2c1e] rounded-lg px-4 py-3 w-full text-black placeholder-black"
+                  value={price === "" ? "" : price}
+                  min={0.01}
+                  step="any"
+                  onChange={(e) =>
+                    setPrice(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  required
+                />
+                {priceError && (
+                  <span className="text-red-500">{priceError}</span>
+                )}
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="bg-[#f7f3ef] text-black px-4 py-2 rounded-lg font-semibold"
+                    disabled={loading}
+                  >
+                    {loading
+                      ? "Salvando..."
+                      : editProduct
+                        ? "Salvar Alterações"
+                        : "Cadastrar"}
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-black text-white px-4 py-2 rounded-lg font-semibold"
+                    onClick={handleCloseForm}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
 
+          <h2 className="text-2xl font-extrabold mb-2 mt-6 text-[#3d2c1e] tracking-tight">
+            Produtos Cadastrados
+          </h2>
           {/* Lista de produtos */}
           <div className="w-full overflow-x-auto">
             <table className="w-full text-left text-black border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 text-sm text-gray-600">
-                  <th className="py-3 px-3 font-medium">Nome</th>
-                  <th className="py-3 px-3 font-medium">Tipo</th>
-                  <th className="py-3 px-3 font-medium">Unidade</th>
-                  <th className="py-3 px-3 font-medium text-right">Ações</th>
+                  <th className="py-3 px-3 font-medium text-center">Nome</th>
+                  <th className="py-3 px-3 font-medium text-center">Tipo</th>
+                  <th className="py-3 px-3 font-medium text-center">Unidade</th>
+                  <th className="py-3 px-3 font-medium text-center">Preço</th>
+                  <th className="py-3 px-3 font-medium text-center">Ações</th>
                 </tr>
               </thead>
-          
+
               <tbody className="text-sm">
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="py-10 text-center text-gray-500">
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
                       Carregando...
                     </td>
                   </tr>
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-10 text-center text-gray-500">
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
                       Nenhum produto cadastrado.
                     </td>
                   </tr>
@@ -241,9 +294,14 @@ function Products() {
                       key={p.id}
                       className="border-b border-gray-100 hover:bg-[#f7f3ef]/40 transition"
                     >
-                      <td className="py-3 px-3">{p.name}</td>
-                      <td className="py-3 px-3">{p.type}</td>
-                      <td className="py-3 px-3">{p.unit}</td>
+                      <td className="py-3 px-3 text-center">{p.name}</td>
+                      <td className="py-3 px-3 text-center">{p.type}</td>
+                      <td className="py-3 px-3 text-center">{p.unit}</td>
+                      <td className="py-3 px-3 text-center">
+                        {p.product_price !== undefined
+                          ? `R$ ${Number(p.product_price).toFixed(2)}`
+                          : "-"}
+                      </td>
                       <td className="py-3 px-3">
                         <div className="flex justify-end gap-2">
                           <button
@@ -252,7 +310,7 @@ function Products() {
                           >
                             Editar
                           </button>
-          
+
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
                             className="px-3 py-1.5 rounded-md bg-red-500 text-white text-xs hover:bg-red-600 transition"

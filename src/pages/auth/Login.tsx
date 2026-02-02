@@ -13,6 +13,13 @@ export default function Login() {
   const navigate = useNavigate();
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
+  const supabaseErrorMap: Record<string, string> = {
+    "Invalid login credentials": "E-mail ou senha inválidos.",
+    "Email not confirmed": "E-mail não confirmado. Verifique sua caixa de entrada.",
+    "User already registered": "Usuário já cadastrado.",
+    "User not found": "Usuário não encontrado.",
+  };
+  
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -24,7 +31,8 @@ export default function Login() {
     });
 
     if (error) {
-      setErro(error.message);
+      const mensagem = supabaseErrorMap[error.message] || "Ocorreu um erro: " + error.message;
+      setErro(mensagem);
       setLoading(false);
       return;
     }
@@ -38,13 +46,11 @@ export default function Login() {
         .eq("id", user.id)
         .single();
       if (profileError && profileError.code !== "PGRST116") {
-        setErro(profileError.message);
+        const mensagem = supabaseErrorMap[profileError.message] || "Ocorreu um erro: " + profileError.message;
+        setErro(mensagem);
         setLoading(false);
         return;
       }
-      console.log("User ID:", user.id);
-      console.log("Profile data:", profile);
-      console.log("Profile error:", profileError);
       if (!profile) {
         // Não existe perfil, pede o nome de perfil
         setShowProfileName(true);

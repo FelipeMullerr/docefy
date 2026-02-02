@@ -24,6 +24,14 @@ export default function Register() {
     { label: "Pelo menos um número", check: (s: string) => /\d/.test(s) },
   ];
 
+  const supabaseRegisterErrorMap: Record<string, string> = {
+    "User already registered": "Este e-mail já está cadastrado.",
+    "Password should be at least 6 characters": "A senha deve ter pelo menos 6 caracteres.",
+    "Email not confirmed": "E-mail não confirmado. Verifique sua caixa de entrada.",
+    "Invalid email format": "Formato de e-mail inválido.",
+    "Signup requires a valid password": "Informe uma senha válida.",
+  };
+  
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -36,7 +44,8 @@ export default function Register() {
     });
 
     if (error) {
-      setErro(error.message);
+      const mensagem = supabaseRegisterErrorMap[error.message] || "Ocorreu um erro: " + error.message;
+      setErro(mensagem);
       setLoading(false);
       return;
     }

@@ -12,6 +12,7 @@ type Product = {
   type: string;
   unit: string;
   user_id: string;
+  product_price?: number;
 };
 
 type Pricing = {
@@ -99,13 +100,16 @@ export default function Dashboard() {
     setProfitMargin(pricing?.profit_margin || 30);
 
     setItems(
-      (pricingItems || []).map((item: any) => ({
-        product_id: item.product_id,
-        amount: parseFloat(item.amount),
-        unit: item.unit,
-        unit_price: item.unit_price ? parseFloat(item.unit_price) : 0,
-        total_price: item.total_price ? parseFloat(item.total_price) : 0,
-      })),
+      (pricingItems || []).map((item: any) => {
+        const product = products.find((p) => p.id === item.product_id);
+        return {
+          product_id: item.product_id,
+          amount: parseFloat(item.amount),
+          unit: item.unit,
+          unit_price: product?.product_price ?? 0,
+          total_price: item.total_price ? parseFloat(item.total_price) : 0,
+        };
+      }),
     );
     setLoading(false);
   }
@@ -137,10 +141,6 @@ export default function Dashboard() {
     );
   }, [search, pricings]);
 
-  function getUnit(productId: string) {
-    return products.find((p) => p.id === productId)?.unit || "";
-  }
-
   function addItem() {
     setItems([
       ...items,
@@ -148,9 +148,31 @@ export default function Dashboard() {
     ]);
   }
 
+  // Atualiza todos os campos relevantes do item ao trocar o produto
+  function setProductForItem(index: number, productId: string) {
+    const selectedProduct = products.find((p) => p.id === productId);
+    const newItems = [...items];
+    newItems[index] = {
+      ...newItems[index],
+      product_id: productId,
+      unit: selectedProduct?.unit ?? "",
+      unit_price: selectedProduct?.product_price ?? 0,
+      // Mantém amount e total_price
+    };
+    setItems(newItems);
+  }
+
+  // Atualiza o item e, se o campo for product_id, busca o preço do produto automaticamente
   function updateItem(index: number, field: keyof PricingItem, value: any) {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
+
+    // Se o campo alterado for product_id, buscar o preço do produto e unidade
+    if (field === "product_id") {
+      const selectedProduct = products.find((p) => p.id === value);
+      newItems[index].unit_price = selectedProduct?.product_price ?? 0;
+      newItems[index].unit = selectedProduct?.unit ?? "";
+    }
 
     const { amount, unit_price } = newItems[index];
     newItems[index].total_price =
@@ -238,9 +260,12 @@ export default function Dashboard() {
   }
 
   const media =
-    pricings.reduce((acc, p) => acc + (p.suggested_price || 0), 0) / (pricings.length || 1);
+    pricings.reduce((acc, p) => acc + (p.suggested_price || 0), 0) /
+    (pricings.length || 1);
 
-  {/* Percorre por todos os itens da precificacao somando o seu preco total, desta forma ja se tem o valor calculado */}
+  {
+    /* Percorre por todos os itens da precificacao somando o seu preco total, desta forma ja se tem o valor calculado */
+  }
   const itemsTotal = items.reduce((acc, cur) => acc + cur.total_price, 0);
   const totalCost = itemsTotal + Number(laborCost) + Number(extraCost);
   const suggestedPrice = totalCost * (1 + profitMargin / 100);
@@ -310,7 +335,6 @@ export default function Dashboard() {
           <PricingForm
             products={products}
             items={items}
-            setItems={setItems}
             pricingName={pricingName}
             setPricingName={setPricingName}
             laborCost={laborCost}
@@ -326,9 +350,9 @@ export default function Dashboard() {
             editingPricingId={editingPricingId}
             addItem={addItem}
             updateItem={updateItem}
+            setProductForItem={setProductForItem}
             removeItem={removeItem}
             savePricing={savePricing}
-            getUnit={getUnit}
           />
 
           {/* Lista de precificacoes */}
